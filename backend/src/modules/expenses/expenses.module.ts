@@ -8,6 +8,7 @@ import { ExpenseStatusHistory } from './entities/expense-status-history.entity';
 import { BudgetModule } from '@modules/budget/budget.module';
 import { NotificationsModule } from '@modules/notifications/notifications.module';
 import { AuditModule } from '@modules/audit/audit.module';
+import { ProductionLifecycleGuard } from '@guards/production-lifecycle.guard';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { AuditModule } from '@modules/audit/audit.module';
     AuditModule,
   ],
   controllers: [ExpensesController],
-  providers: [ExpensesService],
+  providers: [ExpensesService, ProductionLifecycleGuard],
   exports: [ExpensesService],
 })
 export class ExpensesModule {}

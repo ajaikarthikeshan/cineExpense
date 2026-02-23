@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { RolesGuard } from '@guards/roles.guard';
+import { ProductionLifecycleGuard } from '@guards/production-lifecycle.guard';
 import { Roles } from '@shared/decorators/roles.decorator';
 import { CurrentUser } from '@shared/decorators/current-user.decorator';
 import { ExpensesService } from './expenses.service';
@@ -13,6 +14,7 @@ export class ExpensesController {
 
   @Post()
   @Roles('SUPERVISOR')
+  @UseGuards(ProductionLifecycleGuard)
   create(@Body() dto: CreateExpenseDto, @CurrentUser() user: any) {
     return this.expensesService.create(dto, user.id, user.productionId);
   }
@@ -29,36 +31,42 @@ export class ExpensesController {
 
   @Post(':id/submit')
   @Roles('SUPERVISOR')
+  @UseGuards(ProductionLifecycleGuard)
   submit(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'Submitted', user.id);
   }
 
   @Post(':id/manager/approve')
   @Roles('MANAGER')
+  @UseGuards(ProductionLifecycleGuard)
   managerApprove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'ManagerApproved', user.id);
   }
 
   @Post(':id/manager/return')
   @Roles('MANAGER')
+  @UseGuards(ProductionLifecycleGuard)
   managerReturn(@Param('id') id: string, @Body('comment') comment: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'ManagerReturned', user.id, comment);
   }
 
   @Post(':id/manager/reject')
   @Roles('MANAGER')
+  @UseGuards(ProductionLifecycleGuard)
   managerReject(@Param('id') id: string, @Body('comment') comment: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'ManagerRejected', user.id, comment);
   }
 
   @Post(':id/accounts/approve')
   @Roles('ACCOUNTS')
+  @UseGuards(ProductionLifecycleGuard)
   accountsApprove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'AccountsApproved', user.id);
   }
 
   @Post(':id/accounts/return')
   @Roles('ACCOUNTS')
+  @UseGuards(ProductionLifecycleGuard)
   accountsReturn(@Param('id') id: string, @Body('comment') comment: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'AccountsReturned', user.id, comment);
   }

@@ -1,6 +1,7 @@
 import { Controller, Post, Param, Body, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { RolesGuard } from '@guards/roles.guard';
+import { ProductionLifecycleGuard } from '@guards/production-lifecycle.guard';
 import { Roles } from '@shared/decorators/roles.decorator';
 import { CurrentUser } from '@shared/decorators/current-user.decorator';
 import { PaymentsService } from './payments.service';
@@ -13,6 +14,7 @@ export class PaymentsController {
 
   @Post(':id/accounts/mark-paid')
   @Roles('ACCOUNTS')
+  @UseGuards(ProductionLifecycleGuard)
   markPaid(
     @Param('id') id: string,
     @Body() dto: MarkPaidDto,
