@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ───────────────────────────────────────────────────── */
+:root {
+  --bg-primary:        #0A0A0A;
+  --bg-surface:        #141414;
+  --bg-sidebar:        #111111;
+  --accent-gold:       #D4AF37;
+  --accent-red:        #9B1C1C;
+  --accent-red-hover:  #B91C1C;
+  --text-primary:      #F5F5F5;
+  --text-muted:        #A3A3A3;
+  --success:           #15803D;
+  --warning:           #B45309;
+  --danger:            #991B1B;
+  --border:            #2A2A2A;
+  --gold-border:       rgba(212, 175, 55, 0.25);
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* ── Custom Scrollbar ─────────────────────────────────────────────── */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-surface);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--accent-gold);
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    opacity: 1;
+  }
+
+  /* ── Selection ────────────────────────────────────────────────────── */
+  ::selection {
+    background-color: rgba(212, 175, 55, 0.25);
+    color: var(--text-primary);
+  }
+}
