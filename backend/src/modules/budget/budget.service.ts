@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Expense } from '@modules/expenses/entities/expense.entity';
 import { Department } from '@modules/departments/entities/department.entity';
@@ -17,7 +17,11 @@ export class BudgetService {
     currentExpenseId: string,
     em: EntityManager,
   ): Promise<boolean> {
-    const dept = await em.findOneOrFail(Department, { where: { id: departmentId } });
+    const dept = await em.findOne(Department, {
+      where: { id: departmentId },
+      lock: { mode: 'pessimistic_write' },
+    });
+    if (!dept) throw new NotFoundException('Department not found');
 
     const { sum } = await em
       .createQueryBuilder(Expense, 'e')
