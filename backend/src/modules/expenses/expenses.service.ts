@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Expense, ExpenseStatus } from './entities/expense.entity';
 import { ExpenseStatusHistory } from './entities/expense-status-history.entity';
+import { ExpenseReceipt } from './entities/expense-receipt.entity';
 import { BudgetService } from '@modules/budget/budget.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { AuditService } from '@modules/audit/audit.service';
@@ -23,6 +24,18 @@ const ALLOWED_TRANSITIONS: Record<ExpenseStatus, ExpenseStatus[]> = {
   Paid: [],
 };
 
+const TRANSITION_ROLE_REQUIREMENT: Partial<Record<ExpenseStatus, string>> = {
+  Submitted: 'SUPERVISOR',
+  ManagerApproved: 'MANAGER',
+  ManagerReturned: 'MANAGER',
+  ManagerRejected: 'MANAGER',
+  AccountsApproved: 'ACCOUNTS',
+  AccountsReturned: 'ACCOUNTS',
+  Paid: 'ACCOUNTS',
+};
+
+const COMMENT_REQUIRED_STATUSES: ExpenseStatus[] = ['ManagerReturned', 'ManagerRejected', 'AccountsReturned'];
+
 const EDITABLE_STATES: ExpenseStatus[] = ['Draft', 'ManagerReturned', 'ManagerRejected', 'AccountsReturned'];
 
 @Injectable()
@@ -37,8 +50,18 @@ export class ExpensesService {
   ) {}
 
   async create(dto: CreateExpenseDto, userId: string, productionId: string) {
+    const duplicateCount = await this.expenseRepo
+      .createQueryBuilder('e')
+      .where('e.departmentId = :departmentId', { departmentId: dto.departmentId })
+      .andWhere('e.productionId = :productionId', { productionId })
+      .andWhere('e.amount = :amount', { amount: dto.amount })
+      .andWhere('e.expenseDate = :expenseDate', { expenseDate: dto.expenseDate })
+      .andWhere('e.status != :rejected', { rejected: 'ManagerRejected' })
+      .getCount();
+
     const expense = this.expenseRepo.create({ ...dto, submittedBy: userId, productionId, status: 'Draft' });
-    return this.expenseRepo.save(expense);
+    const saved = await this.expenseRepo.save(expense);
+    return { expense: saved, isDuplicateWarning: duplicateCount > 0 };
   }
 
   async findAll(productionId: string, filters?: Record<string, string>) {
@@ -57,6 +80,7 @@ export class ExpensesService {
     toStatus: ExpenseStatus,
     performedBy: string,
     comment?: string,
+    performedByRole?: string,
   ) {
     return this.dataSource.transaction(async (em) => {
       const expense = await em.findOne(Expense, {
@@ -68,6 +92,30 @@ export class ExpensesService {
       const allowed = ALLOWED_TRANSITIONS[expense.status];
       if (!allowed.includes(toStatus)) {
         throw new ConflictException(`Cannot transition from ${expense.status} to ${toStatus}`);
+      }
+
+      // Comment required for reject/return actions
+      if (COMMENT_REQUIRED_STATUSES.includes(toStatus) && !comment?.trim()) {
+        throw new BadRequestException('Comment is required for reject and return actions');
+      }
+
+      // Role must match the transition requirement
+      const requiredRole = TRANSITION_ROLE_REQUIREMENT[toStatus];
+      if (requiredRole && performedByRole !== requiredRole) {
+        throw new ForbiddenException('Your role is not permitted to perform this transition');
+      }
+
+      if (toStatus === 'Submitted') {
+        // At least one receipt must exist before submission
+        const receiptCount = await em.count(ExpenseReceipt, { where: { expenseId: id } });
+        if (receiptCount === 0) {
+          throw new BadRequestException('At least one receipt must be uploaded before submitting');
+        }
+
+        // Only the expense owner may submit
+        if (expense.submittedBy !== performedBy) {
+          throw new ForbiddenException('You can only submit your own expenses');
+        }
       }
 
       // Budget check at ManagerApprove

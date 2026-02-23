@@ -33,42 +33,42 @@ export class ExpensesController {
   @Roles('SUPERVISOR')
   @UseGuards(ProductionLifecycleGuard)
   submit(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'Submitted', user.id);
+    return this.expensesService.transition(id, user.productionId, 'Submitted', user.id, undefined, user.role);
   }
 
   @Post(':id/manager/approve')
   @Roles('MANAGER')
   @UseGuards(ProductionLifecycleGuard)
   managerApprove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'ManagerApproved', user.id);
+    return this.expensesService.transition(id, user.productionId, 'ManagerApproved', user.id, undefined, user.role);
   }
 
   @Post(':id/manager/return')
   @Roles('MANAGER')
   @UseGuards(ProductionLifecycleGuard)
   managerReturn(@Param('id') id: string, @Body('comment') comment: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'ManagerReturned', user.id, comment);
+    return this.expensesService.transition(id, user.productionId, 'ManagerReturned', user.id, comment, user.role);
   }
 
   @Post(':id/manager/reject')
   @Roles('MANAGER')
   @UseGuards(ProductionLifecycleGuard)
   managerReject(@Param('id') id: string, @Body('comment') comment: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'ManagerRejected', user.id, comment);
+    return this.expensesService.transition(id, user.productionId, 'ManagerRejected', user.id, comment, user.role);
   }
 
   @Post(':id/accounts/approve')
   @Roles('ACCOUNTS')
   @UseGuards(ProductionLifecycleGuard)
   accountsApprove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'AccountsApproved', user.id);
+    return this.expensesService.transition(id, user.productionId, 'AccountsApproved', user.id, undefined, user.role);
   }
 
   @Post(':id/accounts/return')
   @Roles('ACCOUNTS')
   @UseGuards(ProductionLifecycleGuard)
   accountsReturn(@Param('id') id: string, @Body('comment') comment: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'AccountsReturned', user.id, comment);
+    return this.expensesService.transition(id, user.productionId, 'AccountsReturned', user.id, comment, user.role);
   }
 
 }
