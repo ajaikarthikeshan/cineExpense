@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { RolesGuard } from '@guards/roles.guard';
 import { Roles } from '@shared/decorators/roles.decorator';
@@ -63,9 +63,4 @@ export class ExpensesController {
     return this.expensesService.transition(id, user.productionId, 'AccountsReturned', user.id, comment);
   }
 
-  @Post(':id/accounts/mark-paid')
-  @Roles('ACCOUNTS')
-  markPaid(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.expensesService.transition(id, user.productionId, 'Paid', user.id);
-  }
 }
