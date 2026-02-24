@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Expense, PaginatedResponse } from '@/types';
+import type { Expense, PaginatedResponse, BudgetSummary } from '@/types';
 
 export const expensesApi = {
   list: (params?: Record<string, string>) =>
@@ -43,4 +43,7 @@ export const expensesApi = {
 
   markPaid: (id: string, data: { paymentMethod: string; referenceNumber: string; paymentDate: string }) =>
     apiClient.post(`/expenses/${id}/accounts/mark-paid`, data),
+
+  getBudgetSummary: () =>
+    apiClient.get<BudgetSummary[]>('/reports/budget-vs-actual'),
 };
