@@ -127,3 +127,8 @@ export interface BudgetSummary {
   utilizationPercent: number;
   isOverThreshold: boolean;
 }
+
+export interface BudgetReport {
+  production: Pick<Production, 'id' | 'name' | 'status' | 'baseCurrency' | 'budgetAlertThreshold'>;
+  departments: BudgetSummary[];
+}
