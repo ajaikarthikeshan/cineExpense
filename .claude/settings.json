@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls node_modules/.bin/tsc*)"
+    ]
+  }
+}
