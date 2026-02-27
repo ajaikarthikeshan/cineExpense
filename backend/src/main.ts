@@ -1,3 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dns = require('node:dns');
+dns.setDefaultResultOrder('verbatim');
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';

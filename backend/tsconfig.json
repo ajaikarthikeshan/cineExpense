@@ -16,7 +16,11 @@
       "@modules/*": ["src/modules/*"],
       "@shared/*": ["src/shared/*"],
       "@config/*": ["src/config/*"],
-      "@database/*": ["src/database/*"]
+      "@database/*": ["src/database/*"],
+      "@guards/*": ["src/guards/*"]
     }
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   }
 }

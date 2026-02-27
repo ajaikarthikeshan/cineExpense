@@ -1,19 +1,6 @@
 version: '3.9'
 
 services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cineexpense
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ../../backend/src/database/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql
-
   storage:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
@@ -33,17 +20,11 @@ services:
     restart: unless-stopped
     env_file: ../../backend/.env
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_NAME: cineexpense
       S3_ENDPOINT: http://storage:9000
       S3_BUCKET: cineexpense-receipts
     ports:
       - "3001:3001"
     depends_on:
-      - db
       - storage
 
   frontend:
@@ -59,5 +40,4 @@ services:
       - backend
 
 volumes:
-  pgdata:
   miniodata:
