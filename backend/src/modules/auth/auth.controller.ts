@@ -14,17 +14,11 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  @Post('refresh')
-  @HttpCode(200)
-  refresh(@Body('refreshToken') token: string) {
-    return this.authService.refresh(token);
-  }
-
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   logout(@CurrentUser() user: any) {
-    return this.authService.logout(user.id);
+    return this.authService.logout(user.userId);
   }
 
   @Get('me')

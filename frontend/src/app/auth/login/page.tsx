@@ -48,7 +48,7 @@ function EyeOffIcon() {
 /* ─── Page ────────────────────────────────────────────────────────────── */
 export default function LoginPage() {
   const router   = useRouter();
-  const setUser  = useAuthStore((s) => s.setUser);
+  const loginStore = useAuthStore((s) => s.login);
 
   const [showPassword, setShowPassword] = useState(false);
   const [serverError,  setServerError]  = useState('');
@@ -68,11 +68,7 @@ export default function LoginPage() {
       const res = await axios.post(`${baseUrl}/auth/login`, data);
       const { access_token, user } = res.data;
 
-      /* Persist token — localStorage for the API client, cookie for middleware */
-      localStorage.setItem('access_token', access_token);
-      document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-
-      setUser(user, access_token);
+      loginStore(access_token, user);
 
       const dest = ROLE_ROUTES[user.role as UserRole] ?? '/dashboard/supervisor';
       router.push(dest);

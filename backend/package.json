@@ -8,6 +8,7 @@
     "start:prod": "node dist/main",
     "migration:run": "typeorm migration:run -d src/database/data-source.ts",
     "migration:generate": "typeorm migration:generate -d src/database/data-source.ts",
+    "seed": "ts-node src/database/seed.ts",
     "lint": "eslint src --ext .ts",
     "test": "jest"
   },

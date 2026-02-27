@@ -2,12 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConfig } from '@config/jwt.config';
-import { UsersService } from '@modules/users/users.service';
-import { HARDCODED_USER } from './auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly usersService: UsersService) {
+  constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -15,8 +13,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(_payload: { sub: string; productionId: string; role: string }) {
-    // PROTOTYPE: always return hardcoded user
-    return HARDCODED_USER;
+  async validate(payload: { sub: string; productionId: string; role: string }) {
+    return {
+      userId: payload.sub,
+      role: payload.role,
+      productionId: payload.productionId,
+    };
   }
 }
