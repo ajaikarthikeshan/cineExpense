@@ -25,6 +25,17 @@ services:
     depends_on:
       - storage
 
+  seed:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: "no"
+    env_file: ../../backend/.env
+    command: >
+      sh -c "npx ts-node -r tsconfig-paths/register src/database/seed.ts"
+    depends_on:
+      - backend
+
   frontend:
     build:
       context: ../../frontend

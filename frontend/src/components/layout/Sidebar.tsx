@@ -135,7 +135,7 @@ const dashboardHref: Record<UserRole, string> = {
   MANAGER: '/dashboard/manager',
   ACCOUNTS: '/dashboard/accounts',
   PRODUCER: '/dashboard/producer',
-  ADMIN: '/admin/users',
+  ADMIN: '/dashboard/producer',
 };
 
 interface NavItem {
@@ -181,8 +181,7 @@ function buildNavItems(role: UserRole, notificationCount: number): NavItem[] {
       break;
     case 'ADMIN':
       items.push(
-        { label: 'Users', href: '/admin/users', icon: <UsersIcon /> },
-        { label: 'Departments', href: '/admin/departments', icon: <LayersIcon /> }
+        { label: 'Budget Overview', href: '/dashboard/producer', icon: <BarChartIcon /> }
       );
       break;
   }
@@ -230,13 +229,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ notificationCount = 0 }: SidebarProps) {
-  const { user, clearAuth } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
 
   const handleSignOut = () => {
-    clearAuth();
-    router.push('/auth/login');
+    logout();
   };
 
   if (!user) return null;

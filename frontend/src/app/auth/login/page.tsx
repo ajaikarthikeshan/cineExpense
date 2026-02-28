@@ -22,7 +22,7 @@ const ROLE_ROUTES: Record<UserRole, string> = {
   MANAGER:    '/dashboard/manager',
   ACCOUNTS:   '/dashboard/accounts',
   PRODUCER:   '/dashboard/producer',
-  ADMIN:      '/admin/users',
+  ADMIN:      '/dashboard/producer',
 };
 
 /* ─── Inline SVG icons (no external library) ─────────────────────────── */
@@ -70,6 +70,7 @@ export default function LoginPage() {
 
       loginStore(access_token, user);
 
+      console.log('Logged in role:', user.role);
       const dest = ROLE_ROUTES[user.role as UserRole] ?? '/dashboard/supervisor';
       router.push(dest);
     } catch {

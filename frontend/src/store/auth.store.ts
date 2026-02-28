@@ -8,6 +8,7 @@ interface AuthUser {
   role: UserRole;
   productionId: string;
   isActive: boolean;
+  departments?: { id: string; name: string }[];
 }
 
 interface AuthState {
@@ -32,7 +33,7 @@ const ROLE_ROUTES: Record<UserRole, string> = {
   MANAGER:    '/dashboard/manager',
   ACCOUNTS:   '/dashboard/accounts',
   PRODUCER:   '/dashboard/producer',
-  ADMIN:      '/admin/users',
+  ADMIN:      '/dashboard/producer',
 };
 
 export function getRedirectForRole(role: UserRole): string {
