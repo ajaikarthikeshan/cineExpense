@@ -9,6 +9,7 @@ import { expensesApi } from '@/lib/api/expenses';
 import { EXPENSE_STATUS_LABELS } from '@/lib/constants/roles';
 import type { Expense, BudgetSummary, ExpenseStatusHistory, ExpenseStatus } from '@/types';
 import type { ToastType } from '@/hooks/useToast';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -177,9 +178,7 @@ export function ManagerActionPanel({
       onShowToast('Expense approved and sent to Accounts', 'success');
       onAction();
     } catch (err: unknown) {
-      setActionError(
-        err instanceof Error ? err.message : 'Failed to approve expense'
-      );
+      setActionError(getApiErrorMessage(err, 'Failed to approve expense'));
     } finally {
       setLoading(null);
     }
@@ -198,9 +197,7 @@ export function ManagerActionPanel({
       onShowToast('Expense returned to supervisor', 'warning');
       onAction();
     } catch (err: unknown) {
-      setActionError(
-        err instanceof Error ? err.message : 'Failed to return expense'
-      );
+      setActionError(getApiErrorMessage(err, 'Failed to return expense'));
     } finally {
       setLoading(null);
     }
@@ -224,9 +221,7 @@ export function ManagerActionPanel({
       onShowToast('Expense rejected', 'error');
       onAction();
     } catch (err: unknown) {
-      setActionError(
-        err instanceof Error ? err.message : 'Failed to reject expense'
-      );
+      setActionError(getApiErrorMessage(err, 'Failed to reject expense'));
     } finally {
       setLoading(null);
     }

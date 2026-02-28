@@ -19,8 +19,9 @@ export class DepartmentsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: any) {
-    return this.departmentsService.findAll(user.productionId);
+  async findAll(@CurrentUser() user: any) {
+    const departments = await this.departmentsService.findAll(user.productionId);
+    return { data: departments };
   }
 
   @Patch(':id')

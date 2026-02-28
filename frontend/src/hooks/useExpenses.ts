@@ -13,10 +13,11 @@ export function useExpenses(filters?: Record<string, string>) {
     setError(null);
     expensesApi
       .list(filters)
-      .then((res) => setExpenses(res.data.data))
-      .catch((err: unknown) =>
-        setError(err instanceof Error ? err.message : 'Failed to load expenses')
-      )
+      .then((res) => setExpenses(res.data?.data ?? []))
+      .catch((err: unknown) => {
+        setExpenses([]);
+        setError(err instanceof Error ? err.message : 'Failed to load expenses');
+      })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters), refreshKey]);

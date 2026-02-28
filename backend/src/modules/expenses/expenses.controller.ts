@@ -1,4 +1,8 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller, Get, Post, Patch, Param, Body, UseGuards, Query,
+  UseInterceptors, UploadedFile,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { RolesGuard } from '@guards/roles.guard';
 import { ProductionLifecycleGuard } from '@guards/production-lifecycle.guard';
@@ -6,6 +10,7 @@ import { Roles } from '@shared/decorators/roles.decorator';
 import { CurrentUser } from '@shared/decorators/current-user.decorator';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
 
 @Controller('expenses')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,11 +34,34 @@ export class ExpensesController {
     return this.expensesService.findOneOrFail(id, user.productionId);
   }
 
+  @Patch(':id')
+  @Roles('SUPERVISOR')
+  @UseGuards(ProductionLifecycleGuard)
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateExpenseDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.expensesService.update(id, dto, user.id, user.productionId);
+  }
+
   @Post(':id/submit')
   @Roles('SUPERVISOR')
   @UseGuards(ProductionLifecycleGuard)
   submit(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.transition(id, user.productionId, 'Submitted', user.id, undefined, user.role);
+  }
+
+  @Post(':id/upload-receipt')
+  @Roles('SUPERVISOR')
+  @UseGuards(ProductionLifecycleGuard)
+  @UseInterceptors(FileInterceptor('receipt'))
+  uploadReceipt(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: any,
+  ) {
+    return this.expensesService.uploadReceipt(id, file, user.id, user.productionId);
   }
 
   @Post(':id/manager/approve')
@@ -71,4 +99,25 @@ export class ExpensesController {
     return this.expensesService.transition(id, user.productionId, 'AccountsReturned', user.id, comment, user.role);
   }
 
+  @Post(':id/accounts/mark-paid')
+  @Roles('ACCOUNTS')
+  @UseGuards(ProductionLifecycleGuard)
+  markPaid(
+    @Param('id') id: string,
+    @Body() body: { paymentMethod: string; referenceNumber: string; paymentDate: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.expensesService.markPaid(id, body, user.id, user.productionId);
+  }
+
+  @Post(':id/producer/override-budget')
+  @Roles('PRODUCER')
+  @UseGuards(ProductionLifecycleGuard)
+  producerOverride(
+    @Param('id') id: string,
+    @Body('reason') reason: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.expensesService.producerOverrideBudget(id, reason, user.id, user.productionId);
+  }
 }

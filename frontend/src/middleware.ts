@@ -22,5 +22,5 @@ export const config = {
    * Match all /dashboard/* and /admin/* routes.
    * Public routes (/auth/login, /, static assets) are intentionally excluded.
    */
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/expenses/:path*', '/notifications/:path*', '/reports/:path*'],
 };

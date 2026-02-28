@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { expensesApi } from '@/lib/api/expenses';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 import type { ExpenseReceipt } from '@/types';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -95,7 +96,7 @@ export function ReceiptPreview({
       await expensesApi.uploadReceipt(expenseId, file);
       onUploadSuccess();
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+      setUploadError(getApiErrorMessage(err, 'Upload failed'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

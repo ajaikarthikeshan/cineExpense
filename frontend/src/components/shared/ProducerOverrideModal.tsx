@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { expensesApi } from '@/lib/api/expenses';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 import type { Expense, BudgetSummary } from '@/types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -79,9 +80,7 @@ export function ProducerOverrideModal({
       await expensesApi.producerOverride(expense.id, reason.trim());
       onSuccess();
     } catch (err: unknown) {
-      setApiError(
-        err instanceof Error ? err.message : 'Failed to approve override. Please try again.'
-      );
+      setApiError(getApiErrorMessage(err, 'Failed to approve override. Please try again.'));
     } finally {
       setSubmitting(false);
     }

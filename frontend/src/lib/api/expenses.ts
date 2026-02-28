@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Expense, PaginatedResponse, BudgetSummary } from '@/types';
+import type { Expense, PaginatedResponse, BudgetReport } from '@/types';
 
 export const expensesApi = {
   list: (params?: Record<string, string>) =>
@@ -9,7 +9,7 @@ export const expensesApi = {
     apiClient.get<Expense>(`/expenses/${id}`),
 
   create: (data: Partial<Expense>) =>
-    apiClient.post<Expense>('/expenses', data),
+    apiClient.post<{ expense: Expense; isDuplicateWarning: boolean }>('/expenses', data),
 
   update: (id: string, data: Partial<Expense>) =>
     apiClient.patch<Expense>(`/expenses/${id}`, data),
@@ -45,5 +45,5 @@ export const expensesApi = {
     apiClient.post(`/expenses/${id}/accounts/mark-paid`, data),
 
   getBudgetSummary: () =>
-    apiClient.get<BudgetSummary[]>('/reports/budget-vs-actual'),
+    apiClient.get<BudgetReport>('/reports/budget-vs-actual'),
 };

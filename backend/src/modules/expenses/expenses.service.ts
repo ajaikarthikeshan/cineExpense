@@ -3,7 +3,7 @@ import {
   ConflictException, ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Expense, ExpenseStatus } from './entities/expense.entity';
 import { ExpenseStatusHistory } from './entities/expense-status-history.entity';
 import { ExpenseReceipt } from './entities/expense-receipt.entity';
@@ -11,6 +11,9 @@ import { BudgetService } from '@modules/budget/budget.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { AuditService } from '@modules/audit/audit.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Valid transitions per the state machine
 const ALLOWED_TRANSITIONS: Record<ExpenseStatus, ExpenseStatus[]> = {
@@ -65,7 +68,17 @@ export class ExpensesService {
   }
 
   async findAll(productionId: string, filters?: Record<string, string>) {
-    return this.expenseRepo.find({ where: { productionId, ...filters } });
+    const qb = this.expenseRepo.createQueryBuilder('e')
+      .where('e.productionId = :productionId', { productionId });
+
+    // Handle comma-separated status filter
+    if (filters?.status) {
+      const statuses = filters.status.split(',').map(s => s.trim());
+      qb.andWhere('e.status IN (:...statuses)', { statuses });
+    }
+
+    const expenses = await qb.orderBy('e.created_at', 'DESC').getMany();
+    return { data: expenses, total: expenses.length, page: 1, limit: expenses.length };
   }
 
   async findOneOrFail(id: string, productionId: string) {
@@ -142,5 +155,89 @@ export class ExpensesService {
 
   isEditable(expense: Expense): boolean {
     return EDITABLE_STATES.includes(expense.status);
+  }
+
+  async update(id: string, dto: UpdateExpenseDto, userId: string, productionId: string) {
+    const expense = await this.expenseRepo.findOne({ where: { id, productionId } });
+    if (!expense) throw new NotFoundException('Expense not found');
+    if (!EDITABLE_STATES.includes(expense.status)) {
+      throw new ConflictException(`Cannot edit expense in ${expense.status} status`);
+    }
+    if (expense.submittedBy !== userId) {
+      throw new ForbiddenException('You can only edit your own expenses');
+    }
+    Object.assign(expense, dto);
+    return this.expenseRepo.save(expense);
+  }
+
+  async uploadReceipt(
+    id: string,
+    file: Express.Multer.File,
+    userId: string,
+    productionId: string,
+  ) {
+    const expense = await this.expenseRepo.findOne({ where: { id, productionId } });
+    if (!expense) throw new NotFoundException('Expense not found');
+    if (!EDITABLE_STATES.includes(expense.status)) {
+      throw new ConflictException('Cannot upload receipt for this expense');
+    }
+
+    // Store file on local disk (demo — production would use S3/MinIO)
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'receipts');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    const filename = `${id}_${Date.now()}_${file.originalname}`;
+    const filePath = path.join(uploadsDir, filename);
+    fs.writeFileSync(filePath, file.buffer);
+
+    const receipt = this.dataSource.getRepository(ExpenseReceipt).create({
+      expenseId: id,
+      filePath: `/uploads/receipts/${filename}`,
+      uploadedBy: userId,
+    });
+    const saved = await this.dataSource.getRepository(ExpenseReceipt).save(receipt);
+
+    await this.auditService.log({
+      productionId,
+      entityType: 'expense',
+      entityId: id,
+      action: 'receipt:uploaded',
+      performedBy: userId,
+    });
+
+    return saved;
+  }
+
+  async markPaid(
+    id: string,
+    body: { paymentMethod: string; referenceNumber: string; paymentDate: string },
+    userId: string,
+    productionId: string,
+  ) {
+    return this.transition(id, productionId, 'Paid', userId, undefined, 'ACCOUNTS');
+  }
+
+  async producerOverrideBudget(
+    id: string,
+    reason: string,
+    userId: string,
+    productionId: string,
+  ) {
+    const expense = await this.expenseRepo.findOne({ where: { id, productionId } });
+    if (!expense) throw new NotFoundException();
+    if (!reason?.trim()) throw new BadRequestException('Override reason is required');
+
+    await this.auditService.log({
+      productionId,
+      entityType: 'expense',
+      entityId: id,
+      action: 'budget:producer-override',
+      performedBy: userId,
+    });
+
+    // After override, allow the manager approve transition to proceed without budget check
+    // For demo, we simply mark it as ManagerApproved
+    return this.transition(id, productionId, 'ManagerApproved', userId, `Producer override: ${reason}`, 'MANAGER');
   }
 }

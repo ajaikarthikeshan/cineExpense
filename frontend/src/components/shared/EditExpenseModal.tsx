@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { expensesApi } from '@/lib/api/expenses';
 import { departmentsApi } from '@/lib/api/departments';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 import {
   createExpenseSchema,
   type CreateExpenseInput,
@@ -157,9 +158,7 @@ export function EditExpenseModal({
       onSuccess();
       handleClose();
     } catch (err: unknown) {
-      setApiError(
-        err instanceof Error ? err.message : 'Failed to update expense'
-      );
+      setApiError(getApiErrorMessage(err, 'Failed to update expense'));
     } finally {
       setIsSubmitting(false);
     }

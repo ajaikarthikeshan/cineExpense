@@ -8,15 +8,12 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { expensesApi } from '@/lib/api/expenses';
 import { departmentsApi } from '@/lib/api/departments';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 import {
   createExpenseSchema,
   type CreateExpenseInput,
 } from '@/lib/validators/expense';
-import type { Department, Expense } from '@/types';
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
-type CreateExpenseResponse = Expense & { isDuplicateWarning?: boolean };
+import type { Department } from '@/types';
 
 // ─── Shared form field styles ──────────────────────────────────────────────────
 
@@ -163,13 +160,13 @@ export function CreateExpenseModal({
     setApiError(null);
     try {
       const res = await expensesApi.create(data);
-      const expense = res.data as CreateExpenseResponse;
+      const { expense, isDuplicateWarning } = res.data;
 
       if (receiptFile) {
         await expensesApi.uploadReceipt(expense.id, receiptFile);
       }
 
-      if (expense.isDuplicateWarning) {
+      if (isDuplicateWarning) {
         setDuplicateWarning(true);
         setTimeout(() => {
           onSuccess();
@@ -180,9 +177,7 @@ export function CreateExpenseModal({
         handleClose();
       }
     } catch (err: unknown) {
-      setApiError(
-        err instanceof Error ? err.message : 'Failed to create expense'
-      );
+      setApiError(getApiErrorMessage(err, 'Failed to create expense'));
     } finally {
       setIsSubmitting(false);
     }

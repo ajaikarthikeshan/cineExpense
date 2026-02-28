@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { expensesApi } from '@/lib/api/expenses';
 import { useAuthStore } from '@/store/auth.store';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 import { EXPENSE_STATUS_LABELS } from '@/lib/constants/roles';
 import type { Expense, ExpenseStatus, ExpenseStatusHistory } from '@/types';
 
@@ -135,7 +136,7 @@ export function ExpenseDetailPanel({
       onRefresh();
     } catch (err: unknown) {
       setActionError(
-        err instanceof Error ? err.message : 'Failed to submit expense'
+        getApiErrorMessage(err, 'Failed to submit expense')
       );
     } finally {
       setSubmitting(false);
@@ -150,7 +151,7 @@ export function ExpenseDetailPanel({
       onRefresh();
     } catch (err: unknown) {
       setActionError(
-        err instanceof Error ? err.message : 'Failed to upload receipt'
+        getApiErrorMessage(err, 'Failed to upload receipt')
       );
     } finally {
       setUploadingReceipt(false);

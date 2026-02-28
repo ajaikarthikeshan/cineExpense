@@ -175,7 +175,7 @@ export default function ManagerDashboardPage() {
   useEffect(() => {
     expensesApi
       .getBudgetSummary()
-      .then((res) => setBudgetSummaries(res.data))
+      .then((res) => setBudgetSummaries(res.data?.departments ?? []))
       .catch(() => {});
   }, []);
 

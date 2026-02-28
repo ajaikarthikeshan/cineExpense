@@ -15,6 +15,7 @@ import type {
   Payment,
 } from '@/types';
 import type { ToastType } from '@/hooks/useToast';
+import { getApiErrorMessage } from '@/lib/utils/api-error';
 
 // ─── Local type extension ─────────────────────────────────────────────────────
 
@@ -172,9 +173,7 @@ export function AccountsActionPanel({
       onShowToast('Expense approved. Ready for payment.', 'success');
       onAction();
     } catch (err: unknown) {
-      setActionError(
-        err instanceof Error ? err.message : 'Failed to approve expense'
-      );
+      setActionError(getApiErrorMessage(err, 'Failed to approve expense'));
     } finally {
       setLoading(null);
     }
@@ -193,9 +192,7 @@ export function AccountsActionPanel({
       onShowToast('Expense returned to supervisor.', 'warning');
       onAction();
     } catch (err: unknown) {
-      setActionError(
-        err instanceof Error ? err.message : 'Failed to return expense'
-      );
+      setActionError(getApiErrorMessage(err, 'Failed to return expense'));
     } finally {
       setLoading(null);
     }
@@ -226,9 +223,7 @@ export function AccountsActionPanel({
       onShowToast('Payment recorded successfully.', 'success');
       onAction();
     } catch (err: unknown) {
-      setActionError(
-        err instanceof Error ? err.message : 'Failed to record payment'
-      );
+      setActionError(getApiErrorMessage(err, 'Failed to record payment'));
     } finally {
       setLoading(null);
     }

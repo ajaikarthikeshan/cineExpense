@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
+import { ReportsController } from './reports.controller';
+import { ReportsService } from './reports.service';
 
-/** PROTOTYPE: Reports module stub. Full implementation pending. */
-@Module({})
+@Module({
+  controllers: [ReportsController],
+  providers: [ReportsService],
+})
 export class ReportsModule {}

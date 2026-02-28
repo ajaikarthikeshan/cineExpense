@@ -18,11 +18,13 @@ export function useBudget() {
     reportsApi
       .getBudgetVsActual()
       .then((res) => {
-        if (!cancelled) setSummary(res.data);
+        if (!cancelled) setSummary(res.data ?? null);
       })
       .catch((err: unknown) => {
-        if (!cancelled)
+        if (!cancelled) {
+          setSummary(null);
           setError(err instanceof Error ? err.message : 'Failed to load budget data');
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
